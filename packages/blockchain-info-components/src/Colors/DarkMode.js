@@ -9,6 +9,7 @@ export default {
   // PIT
   pitTurquoise: '#42F1B8',
   pitNight: '#0A0D10',
+  pitBlue: '#2219CC',
   // Action
   sent: '#F26C57',
   received: '#00BABC',

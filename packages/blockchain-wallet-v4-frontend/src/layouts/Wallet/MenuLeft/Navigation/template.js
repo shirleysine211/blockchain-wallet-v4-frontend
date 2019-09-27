@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
+import Joyride, { STATUS } from 'react-joyride/lib'
 import { FormattedMessage } from 'react-intl'
 import { LinkContainer } from 'react-router-bootstrap'
 import { mapObjIndexed, toLower, values } from 'ramda'
@@ -22,6 +23,7 @@ import {
   TooltipIcon,
   TooltipHost
 } from 'blockchain-info-components'
+import { PitTooltip, TOUR_STEPS } from './model'
 
 const HelperTipContainer = styled.div`
   margin-left: auto;
@@ -56,6 +58,63 @@ const JoyrideSpotlight = styled.div`
   height: 32px;
 `
 
+const Pulse = ({ theme }) => {
+  return keyframes`
+    0% {
+      box-shadow: 0 0 0 0 ${theme['blue']};
+      opacity: 1;
+    }
+    30%{
+      opacity: 0.7;
+    }
+    100% {
+      box-shadow: 0 0 0 32px ${theme['blue']};
+      opacity: 0.25;
+    }
+  `
+}
+
+const BeaconComponent = styled.span`
+  background-color: ${({ theme }) => theme['blue']} !important;
+  opacity: 0.25 !important;
+  border-radius: 50% !important;
+  animation: ${props => Pulse(props)} 1s infinite;
+  height: 16px !important;
+  width: 16px !important;
+  margin-left: -7px;
+`
+
+const PitTour = props => {
+  const [run, setRun] = useState(false)
+
+  const handleTourCallbacks = data => {
+    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(data.status)) setRun(false)
+  }
+
+  useEffect(() => {
+    setRun(true)
+  }, [])
+
+  return (
+    <Joyride
+      run={run}
+      beacon={true}
+      beaconComponent={BeaconComponent}
+      steps={TOUR_STEPS}
+      disableScrollParentFix={true}
+      tooltipComponent={PitTooltip}
+      callback={handleTourCallbacks}
+      showSkipButton={true}
+      styles={{
+        overlay: {
+          backgroundColor: 'none'
+        }
+      }}
+      {...props.Joyride}
+    />
+  )
+}
+
 const PitLinkContent = ({ pitSideNavTest, firstLogin, showThePitPulse }) => {
   switch (pitSideNavTest) {
     case 'sidenav_trading':
@@ -73,10 +132,13 @@ const PitLinkContent = ({ pitSideNavTest, firstLogin, showThePitPulse }) => {
     case 'sidenav_pulsing_pit':
       return (
         <React.Fragment>
-          {!firstLogin && showThePitPulse && (
-            <JoyrideSpotlight className='react-joyride__spotlight' />
-          )}
-          <MenuIcon name='the-pit' style={{ paddingLeft: '2px' }} size='24px' />
+          {true && <PitTour />}
+          <MenuIcon
+            name='the-pit'
+            style={{ paddingLeft: '2px' }}
+            size='24px'
+            className='the-pit-tooltip'
+          />
           <Destination>
             <FormattedMessage
               id='layouts.wallet.menuleft.navigation.thepitbold'
@@ -186,6 +248,37 @@ const Navigation = props => {
           </HelperTipContainer>
         </MenuItem>
       </LinkContainer>
+      {props.isInvitedToPitSidenav &&
+        (props.isInvitedToPitSidenav ? (
+          <Link
+            href={props.pitUrl}
+            rel='noopener noreferrer'
+            target='_blank'
+            style={{ width: '100%' }}
+          >
+            <MenuItem data-e2e='thePitLink'>
+              <PitLinkContent pitSideNavTest='sidenav_pulsing_pit' />
+            </MenuItem>
+          </Link>
+        ) : (
+          <SpotlightLinkContainer
+            to='/thepit'
+            activeClassName='active'
+            onClick={onClickPitSideNavLink}
+          >
+            <MenuItem data-e2e='thePitLink'>
+              <PitLinkContent pitSideNavTest='sidenav_pulsing_pit' />
+              <NewCartridge>
+                <Text color='orange' size='12' weight={500} uppercase>
+                  <FormattedMessage
+                    id='layouts.wallet.menuleft.navigation.transactions.new'
+                    defaultMessage='New'
+                  />
+                </Text>
+              </NewCartridge>
+            </MenuItem>
+          </SpotlightLinkContainer>
+        ))}
       {/* TODO: bring back lockbox menu */}
       {/* lockboxOpened && (
         <SubMenu>
@@ -248,39 +341,6 @@ const Navigation = props => {
           coinOrder
         )
       )}
-      {props.isInvitedToPitSidenav && <Separator />}
-      {props.isInvitedToPitSidenav ? (
-        props.isPitAccountLinked ? (
-          <Link
-            href={props.pitUrl}
-            rel='noopener noreferrer'
-            target='_blank'
-            style={{ width: '100%' }}
-          >
-            <MenuItem data-e2e='thePitLink'>
-              <PitLinkContent pitSideNavTest='original' />
-            </MenuItem>
-          </Link>
-        ) : (
-          <SpotlightLinkContainer
-            to='/thepit'
-            activeClassName='active'
-            onClick={onClickPitSideNavLink}
-          >
-            <MenuItem data-e2e='thePitLink'>
-              <PitLinkContent {...rest} />
-              <NewCartridge>
-                <Text color='orange' size='12' weight={500} uppercase>
-                  <FormattedMessage
-                    id='layouts.wallet.menuleft.navigation.transactions.new'
-                    defaultMessage='New'
-                  />
-                </Text>
-              </NewCartridge>
-            </MenuItem>
-          </SpotlightLinkContainer>
-        )
-      ) : null}
     </Wrapper>
   )
 }
