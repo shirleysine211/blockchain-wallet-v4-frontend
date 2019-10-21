@@ -1,10 +1,13 @@
 /* eslint no-console: "off" */
 
+'use strict'
+
 const chalk = require('chalk')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const net = require(`net`)
+const R = require(`ramda`)
 const Webpack = require('webpack')
 const webpackDevServer = require(`webpack-dev-server`)
 const path = require('path')
@@ -138,8 +141,8 @@ module.exports = async () => {
         filename: 'index.html'
       }),
       new Webpack.DefinePlugin({
-        MAIN_DOMAIN: `"${mainProcessUrl}"`,
-        SECURITY_DOMAIN: `"${securityProcessUrl}"`
+        MAIN_PROCESS_URL: `"${mainProcessUrl}"`,
+        SECURITY_PROCESS_URL: `"${securityProcessUrl}"`
       }),
       new Webpack.HotModuleReplacementPlugin()
     ],

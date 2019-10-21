@@ -26,6 +26,8 @@ export const emailMismatch2faErrorMessage =
 export const wrongCaptcha2faErrorMessage = 'Error: Captcha Code Incorrect'
 export const wrongAuthCodeErrorMessage = 'Authentication code is incorrect'
 
+console.log(`MAIN model`, model)
+
 const { LOGIN_EVENTS } = model.analytics
 
 export default ({ api, coreSagas }) => {

@@ -3,11 +3,12 @@ const babelConfig = require(`./babel.config.js`)
 const CleanWebpackPlugin = require('clean-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const path = require(`path`)
+const R = require(`ramda`)
 const Webpack = require('webpack')
 
 const src = path.join(__dirname, `src`)
 
-module.exports = ({ PATHS }) => ({
+module.exports = ({ envConfig, PATHS }) => ({
   name: `root`,
   entry: ['@babel/polyfill', path.join(src, 'index.js')],
   module: {
@@ -40,9 +41,11 @@ module.exports = ({ PATHS }) => ({
       template: path.join(src, 'index.html'),
       filename: 'index.html'
     }),
-    new Webpack.DefinePlugin({
-      MAIN_DOMAIN: `"https://wallet-main-dev.blockchain.com/"`,
-      SECURITY_DOMAIN: `"https://wallet-security-dev.blockchain.com/"`
-    })
+    new Webpack.DefinePlugin(
+      R.map(
+        JSON.stringify,
+        R.pick([`MAIN_PROCESS_URL`, `SECURITY_PROCESS_URL`], envConfig)
+      )
+    )
   ]
 })
